@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='market-growth-analysis',
-    version='1.0.2',
+    version='1.0.3',
     packages=['market_growth_analysis'],
     package_dir={'': 'src'},
     install_requires=[
