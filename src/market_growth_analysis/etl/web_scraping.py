@@ -8,6 +8,15 @@ import logging
 from pathlib import Path 
 import concurrent.futures
 import tqdm
+import yfinance as yf
+import pandas as pd
+import os
+from os.path import join
+from datetime import datetime
+from pathlib import Path 
+
+
+############################### FINANCIAL SHEETS ###############################
 
 def parser(URL):
 
@@ -43,11 +52,11 @@ def parser(URL):
         temporal_df = pd.DataFrame.from_dict(dict_parsed, orient='index', columns=[name])
         financial_df = financial_df.join(temporal_df, how='outer')
 
-    return financial_df
+    return financial_df.reset_index(names='Date')
 
 
 
-def scrape_company_data(company_key, company_url, industry, sector, company_full_name, company_country):
+def scrape_company_data(company_key, company_url, industry, sector, company_full_name, company_country, financial_sheet):
     try:
         # Get the data
         URL = company_url
@@ -58,14 +67,13 @@ def scrape_company_data(company_key, company_url, industry, sector, company_full
         data['company_full_name'] = company_full_name
         data['country'] = company_country
 
-        # Export the data
-        filepath = Path(f'balance_sheet_data/{company_key}.csv')
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        data.to_csv(filepath)
+        return data
 
     except Exception as e:
         error_message = f"Error occurred for {company_key}: {str(e)}"
         logging.error(error_message)
+
+        return None
 
 
 
@@ -91,7 +99,8 @@ def get_industry_data(industry_url):
 
 
 
-def process_sector(sector, sector_dict, financial_statement_url):
+def process_sector(sector, sector_dict, financial_sheet, executor):
+    financial_statement_url = f"{financial_sheet}?freq=A"
     URL_sector = sector_dict[sector]
     res_sector = get_sector_data(URL_sector)
 
@@ -102,6 +111,8 @@ def process_sector(sector, sector_dict, financial_statement_url):
         link = link.find("a")
         link = str(link['href'])
         dict_industry[industry['zacks_x_ind_desc']] = link
+
+    concat = pd.DataFrame()  # New dataframe to store concatenated results
 
     for industry in tqdm.tqdm(dict_industry, desc=f"Industries from {sector}"):
         URL_industry = dict_industry[industry]
@@ -123,7 +134,63 @@ def process_sector(sector, sector_dict, financial_statement_url):
         futures = []
         for key in dict_company.keys():
             future = executor.submit(scrape_company_data, key, dict_company[key], industry, sector,
-                                    dict_company_full_name[key], dict_company_country[key])
+                                    dict_company_full_name[key], dict_company_country[key], financial_sheet)
             futures.append(future)
 
         concurrent.futures.wait(futures)
+
+        # Retrieve results and concatenate dataframes
+        results = [future.result() for future in futures if future.result() is not None]
+        if results:
+            industry_df = pd.concat(results, ignore_index=True)
+            concat = pd.concat([concat, industry_df], ignore_index=True)
+
+    return concat
+
+############################### PRICES ###############################
+
+
+
+def get_price_info(ticker, path ='../../../data/raw_01/income-statement.csv'):
+
+    # Read the csv from stagging
+    financial_sheet = pd.read_csv(path)
+    ticker_file = financial_sheet[financial_sheet['ticker']==ticker]
+
+    # Get the company data from yfinance
+    stock_info = yf.Ticker(ticker)
+    hist = stock_info.history(period="max", interval = "1mo")
+
+    # Transform data to add growth info
+    hist = hist.reset_index()
+    hist['Date'] = pd.to_datetime(hist['Date'])
+    hist['year'] = hist['Date'].dt.year
+
+    histgrouped = hist.groupby(['year']).agg({'Close':'last'})
+    histgrouped = histgrouped.reset_index()
+
+    histgrouped['ticker'] = ticker
+
+    histgrouped['Growth -1'] = (histgrouped['Close'] - histgrouped['Close'].shift(periods=1)) /  histgrouped['Close'].shift(periods=1)
+    histgrouped['Growth +1'] = (histgrouped['Close'].shift(periods=-1) - histgrouped['Close']) /  histgrouped['Close']
+    histgrouped['Growth +5'] = (histgrouped['Close'].shift(periods=-5) - histgrouped['Close']) /  histgrouped['Close']
+    histgrouped['avgGrowth -10'] = histgrouped['Growth -1'].rolling(min_periods=10, window=10).sum() / 10
+    histgrouped['avgGrowth -5'] = histgrouped['Growth -1'].rolling(min_periods=5, window=5).sum() / 5
+
+    filter_years = pd.to_datetime(ticker_file['Date']).dt.year.tolist()
+    histgrouped_filtered = histgrouped[histgrouped['year'].isin(filter_years)]
+    histgrouped_filtered.reset_index(names=['longevity'], inplace=True)
+    
+    return histgrouped_filtered
+
+
+
+def process_prices_company(company):
+    try:
+        histgrouped_filtered = get_price_info(company)
+        return histgrouped_filtered
+
+    except Exception as e:
+        error_message = f"Error occurred for {company[:-4]}: {str(e)}"
+        logging.error(error_message)
+        return None
