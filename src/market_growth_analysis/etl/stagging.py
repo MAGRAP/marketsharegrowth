@@ -4,13 +4,13 @@ import pyodbc
 ############################# STAGING ###########################
 ##################### INCOME STATEMENT ########################
 
-def create_stg_income_statement(conn):
+def create_stg_income_statement(conn, table_name):
     cursor = conn.cursor()
     cursor.execute(
-        """
-        DROP TABLE IF EXISTS [dbo].[FINANCIAL]
+        f"""
+        DROP TABLE IF EXISTS [dbo].[{table_name}]
 
-        CREATE TABLE [dbo].[FINANCIAL](
+        CREATE TABLE [dbo].[{table_name}](
             [ID_COMPANY] [varchar](30) NULL,
             [Date] [varchar](30) NULL,
             [Revenue] [varchar](30) NULL,
@@ -101,12 +101,12 @@ def load_stg_income_statement(conn, concat_financial):
 
 ##################### CASH FLOW STATEMENT ########################
 
-def create_stg_cash_flow_statement(conn):
+def create_stg_cash_flow_statement(conn, table_name):
 
     cursor = conn.cursor()
-    cursor.execute("""DROP TABLE IF EXISTS [dbo].[CASH]
+    cursor.execute(f"""DROP TABLE IF EXISTS [dbo].[{table_name}]
 
-                    CREATE TABLE [dbo].[CASH](
+                    CREATE TABLE [dbo].[{table_name}](
                     
                         [ID_COMPANY] [varchar](30) NULL,
                         [Date] [varchar](30) NULL,
@@ -219,4 +219,155 @@ def load_stg_cash_flow_statement(conn, concat_cash):
 
         return
     
-    ##################### BALANCE SHEET STATEMENT ########################
+##################### BALANCE SHEET STATEMENT ########################
+
+def create_stg_balance_sheet_statement(conn, table_name):
+    cursor = conn.cursor()
+    cursor.execute(f"""DROP TABLE IF EXISTS [dbo].[{table_name}]
+
+                    CREATE TABLE [dbo].[{table_name}](
+                        [ID_COMPANY] [varchar](30) NULL,
+                        [Date] [varchar](30) NULL,
+                        [Cash On Hand] [varchar](30) NULL,
+                        [Receivables] [varchar](30) NULL,
+                        [Inventory] [varchar](30) NULL,
+                        [Pre-Paid Expenses] [varchar](30) NULL,
+                        [Other Current Assets] [varchar](30) NULL,
+                        [Total Current Assets] [varchar](30) NULL,
+                        [Property, Plant, And Equipment] [varchar](30) NULL,
+                        [Long-Term Investments] [varchar](30) NULL,
+                        [Goodwill And Intangible Assets] [varchar](30) NULL,
+                        [Other Long-Term Assets] [varchar](30) NULL,
+                        [Total Long-Term Assets] [varchar](30) NULL,
+                        [Total Assets] [varchar](30) NULL,
+                        [Total Current Liabilities] [varchar](30) NULL,
+                        [Long Term Debt] [varchar](30) NULL,
+                        [Other Non-Current Liabilities] [varchar](30) NULL,
+                        [Total Long Term Liabilities] [varchar](30) NULL,
+                        [Total Liabilities] [varchar](30) NULL,
+                        [Common Stock Net] [varchar](30) NULL,
+                        [Retained Earnings (Accumulated Deficit)] [varchar](30) NULL,
+                        [Comprehensive Income] [varchar](30) NULL,
+                        [Other Share Holders Equity] [varchar](30) NULL,
+                        [Share Holder Equity] [varchar](30) NULL,
+                        [Total Liabilities And Share Holders Equity] [varchar](30) NULL,
+
+
+                    ) ON [PRIMARY]""")
+    conn.commit()  
+    return
+
+def load_stg_balance_sheet_statement(conn, concat_balance):
+    cursor = conn.cursor()
+
+    for i,row in concat_balance.iterrows():
+        cursor.execute('''
+
+                        INSERT INTO dbo.BALANCE (
+                        
+                        [ID_COMPANY],
+                        [Date],
+                        [Cash On Hand],
+                        [Receivables],
+                        [Inventory],
+                        [Pre-Paid Expenses],
+                        [Other Current Assets],
+                        [Total Current Assets],
+                        [Property, Plant, And Equipment],
+                        [Long-Term Investments],
+                        [Goodwill And Intangible Assets],
+                        [Other Long-Term Assets],
+                        [Total Long-Term Assets],
+                        [Total Assets],
+                        [Total Current Liabilities],
+                        [Long Term Debt],
+                        [Other Non-Current Liabilities],
+                        [Total Long Term Liabilities],
+                        [Total Liabilities],
+                        [Common Stock Net],
+                        [Retained Earnings (Accumulated Deficit)],
+                        [Comprehensive Income],
+                        [Other Share Holders Equity],
+                        [Share Holder Equity],
+                        [Total Liabilities And Share Holders Equity]                   
+                        
+                        
+                        )
+                                                
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', 
+                    
+                    tuple(row[['ticker', 'Unnamed: 0','Cash On Hand', 'Receivables',
+                                'Inventory', 'Pre-Paid Expenses', 'Other Current Assets',
+                                'Total Current Assets', 'Property, Plant, And Equipment',
+                                'Long-Term Investments', 'Goodwill And Intangible Assets',
+                                'Other Long-Term Assets', 'Total Long-Term Assets', 'Total Assets',
+                                'Total Current Liabilities', 'Long Term Debt',
+                                'Other Non-Current Liabilities', 'Total Long Term Liabilities',
+                                'Total Liabilities', 'Common Stock Net',
+                                'Retained Earnings (Accumulated Deficit)', 'Comprehensive Income',
+                                'Other Share Holders Equity', 'Share Holder Equity',
+                                'Total Liabilities And Share Holders Equity']].values))
+        
+        conn.commit()
+        return
+
+##################### FINANCIAL RATIOS ########################
+
+def create_stg_financial_ratios(conn, table_name):
+    cursor = conn.cursor()
+
+    cursor.execute(f"""DROP TABLE IF EXISTS [dbo].[{table_name}]
+
+                    CREATE TABLE [dbo].[{table_name}](
+                        [ID_COMPANY] [varchar](30) NULL,
+                        [Date] [varchar](30) NULL,
+                        [Current Ratio] [varchar](30) NULL,
+                        [Long-term Debt / Capital] [varchar](30) NULL,
+                        [Debt/Equity Ratio] [varchar](30) NULL,
+                        [Gross Margin] [varchar](30) NULL,
+                        [Operating Margin] [varchar](30) NULL,
+                        [EBIT Margin] [varchar](30) NULL,
+                        [EBITDA Margin] [varchar](30) NULL,
+                        [Pre-Tax Profit Margin] [varchar](30) NULL,
+                        [Net Profit Margin] [varchar](30) NULL,
+                        [Asset Turnover] [varchar](30) NULL,
+                        [Inventory Turnover Ratio] [varchar](30) NULL,
+                        [Receiveable Turnover] [varchar](30) NULL,
+                        [Days Sales In Receivables] [varchar](30) NULL,
+                        [ROE - Return On Equity] [varchar](30) NULL,
+                        [Return On Tangible Equity] [varchar](30) NULL,
+                        [ROA - Return On Assets] [varchar](30) NULL,
+                        [ROI - Return On Investment] [varchar](30) NULL,
+                        [Book Value Per Share] [varchar](30) NULL,
+                        [Operating Cash Flow Per Share] [varchar](30) NULL,
+                        [Free Cash Flow Per Share] [varchar](30) NULL
+                    ) ON [PRIMARY]""")
+    conn.commit()      
+    return
+
+
+##################### PRICES ########################
+
+def create_stg_prcies(conn, table_name):
+    cursor = conn.cursor()
+    cursor.execute(
+        f"""
+        DROP TABLE IF EXISTS [dbo].[{table_name}]
+
+        CREATE TABLE [dbo].[{table_name}](
+            [ID_COMPANY] [varchar](30) NULL,
+            [Year] [varchar](30) NULL,
+            [Longevity] [varchar](30) NULL,
+            [Close] [varchar](30) NULL,
+            [Growth -1] [varchar](30) NULL,
+            [Growth +1] [varchar](30) NULL,
+            [Growth +5] [varchar](30) NULL,
+            [avgGrowth -10] [varchar](30) NULL,
+            [avgGrowth -5] [varchar](30) NULL
+            
+        ) ON [PRIMARY]
+        """
+                    )
+    conn.commit()  
+    return
