@@ -1,0 +1,115 @@
+
+common_columns:
+  - PK
+  - ticker
+  - Date
+
+columns_income_statement:
+  - Revenue
+  - Cost Of Goods Sold
+  - Gross Profit
+  - Research And Development Expenses
+  - SG&A Expenses
+  - Other Operating Income Or Expenses
+  - Operating Expenses
+  - Operating Income
+  - Total Non-Operating Income/Expense
+  - Pre-Tax Income
+  - Income Taxes
+  - Income After Taxes
+  - Other Income
+  - Income From Continuous Operations
+  - Income From Discontinued Operations
+  - Net Income
+  - EBITDA
+  - EBIT
+  - Basic Shares Outstanding
+  - Shares Outstanding
+  - Basic EPS
+  - EPS - Earnings Per Share
+
+columns_balance_sheet:
+  - Cash On Hand
+  - Receivables
+  - Inventory
+  - Pre-Paid Expenses
+  - Other Current Assets
+  - Total Current Assets
+  - Property, Plant, And Equipment
+  - Long-Term Investments
+  - Goodwill And Intangible Assets
+  - Other Long-Term Assets
+  - Total Long-Term Assets
+  - Total Assets
+  - Total Current Liabilities
+  - Long Term Debt
+  - Other Non-Current Liabilities
+  - Total Long Term Liabilities
+  - Total Liabilities
+  - Common Stock Net
+  - Retained Earnings (Accumulated Deficit)
+  - Comprehensive Income
+  - Other Share Holders Equity
+  - Share Holder Equity
+  - Total Liabilities And Share Holders Equity
+
+columns_cash_flow_statement:
+  - Net Income/Loss
+  - Total Depreciation And Amortization - Cash Flow
+  - Other Non-Cash Items
+  - Total Non-Cash Items
+  - Change In Accounts Receivable
+  - Change In Inventories
+  - Change In Accounts Payable
+  - Change In Assets/Liabilities
+  - Total Change In Assets/Liabilities
+  - Cash Flow From Operating Activities
+  - Net Change In Property, Plant, And Equipment
+  - Net Change In Intangible Assets
+  - Net Acquisitions/Divestitures
+  - Net Change In Short-term Investments
+  - Net Change In Long-Term Investments
+  - Net Change In Investments - Total
+  - Investing Activities - Other
+  - Cash Flow From Investing Activities
+  - Net Long-Term Debt
+  - Net Current Debt
+  - Debt Issuance/Retirement Net - Total
+  - Net Common Equity Issued/Repurchased
+  - Net Total Equity Issued/Repurchased
+  - Total Common And Preferred Stock Dividends Paid
+  - Financial Activities - Other
+  - Cash Flow From Financial Activities
+  - Net Cash Flow
+  - Stock-Based Compensation
+  - Common Stock Dividends Paid
+
+columns_prices:
+  - Longevity
+  - Close
+  - Volume
+  - Growth -1
+  - Growth +1
+  - Growth +5
+  - avgGrowth -10
+  - avgGrowth -5
+
+columns_ratios:
+ - Enterprise Value (EV)
+ - EV / Revenue
+ - EV / EBITDA
+ - EV / EBIT
+ - EV / Invested Capital
+ - Free Cash Flow (FCF)
+ - EV / Free Cash Flow
+ - EV / FCF
+ - P/E
+ - P/S
+ - P/CF
+
+columns_dim:
+ - ticker
+ - Company Name
+ - Country
+ - Industry
+ - Sector
