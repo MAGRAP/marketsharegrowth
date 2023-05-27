@@ -151,10 +151,9 @@ def process_sector(sector, sector_dict, financial_sheet, executor):
 
 
 
-def get_price_info(ticker, path ='../../../data/raw_01/income-statement.csv'):
+def get_price_info(ticker, financial_sheet):
 
     # Read the csv from stagging
-    financial_sheet = pd.read_csv(path)
     ticker_file = financial_sheet[financial_sheet['ticker']==ticker]
 
     # Get the company data from yfinance
@@ -166,28 +165,52 @@ def get_price_info(ticker, path ='../../../data/raw_01/income-statement.csv'):
     hist['Date'] = pd.to_datetime(hist['Date'])
     hist['year'] = hist['Date'].dt.year
 
-    histgrouped = hist.groupby(['year']).agg({'Close':'last'})
-    histgrouped = histgrouped.reset_index()
 
-    histgrouped['ticker'] = ticker
+    # Convert 'Date' column in 'hist' dataframe to string format
+    hist['Date'] = hist['Date'].astype(str)
+    # Extract the 'YYYY-MM' format from 'Date' column in 'ticker_file' dataframe
+    ticker_file['YearMonth'] = ticker_file['Date'].str.slice(0, 7)
+    # Filter 'hist' dataframe based on 'YYYY-MM' values from 'ticker_file'
+    filtered_hist = hist[hist['Date'].str.slice(0, 7).isin(ticker_file['YearMonth'])]
 
-    histgrouped['Growth -1'] = (histgrouped['Close'] - histgrouped['Close'].shift(periods=1)) /  histgrouped['Close'].shift(periods=1)
-    histgrouped['Growth +1'] = (histgrouped['Close'].shift(periods=-1) - histgrouped['Close']) /  histgrouped['Close']
-    histgrouped['Growth +5'] = (histgrouped['Close'].shift(periods=-5) - histgrouped['Close']) /  histgrouped['Close']
-    histgrouped['avgGrowth -10'] = histgrouped['Growth -1'].rolling(min_periods=10, window=10).sum() / 10
-    histgrouped['avgGrowth -5'] = histgrouped['Growth -1'].rolling(min_periods=5, window=5).sum() / 5
 
-    filter_years = pd.to_datetime(ticker_file['Date']).dt.year.tolist()
-    histgrouped_filtered = histgrouped[histgrouped['year'].isin(filter_years)]
-    histgrouped_filtered.reset_index(names=['longevity'], inplace=True)
+
+    # Format to datetime
+    filtered_hist['Date'] = pd.to_datetime(filtered_hist['Date'])
+    hist['Date'] = pd.to_datetime(hist['Date'])
+    # Find the earliest date in the filtered_hist dataframe
+    earliest_date = filtered_hist['Date'].min()
+    # Filter 'hist' dataframe for rows with a date greater than the earliest date
+    filtered_hist_after_earliest = hist[hist['Date'].dt.year > earliest_date.year]
+    # Find the earliest date in the filtered_hist dataframe
+    earliest_date = filtered_hist['Date'].min()
+    # Filter 'hist' dataframe for rows with a date greater than the earliest date
+    filtered_hist_after_earliest = hist[hist['Date'].dt.year < earliest_date.year]
+    # Filter the resulting dataframe for rows with the same month as the earliest date
+    appended_hist = filtered_hist_after_earliest[filtered_hist_after_earliest['Date'].dt.month == earliest_date.month]
+    # Concatenate the filtered_hist dataframe with the appended_hist dataframe
+    prices_filtered = pd.concat([filtered_hist, appended_hist]).sort_values(by='year').reset_index(drop=True)
+
+
+
+    prices_filtered['ticker'] = ticker
+    prices_filtered['Growth -1'] = (prices_filtered['Close'] - prices_filtered['Close'].shift(periods=1)) /  prices_filtered['Close'].shift(periods=1)
+    prices_filtered['Growth +1'] = (prices_filtered['Close'].shift(periods=-1) - prices_filtered['Close']) /  prices_filtered['Close']
+    prices_filtered['Growth +5'] = (prices_filtered['Close'].shift(periods=-5) - prices_filtered['Close']) /  prices_filtered['Close']
+    prices_filtered['avgGrowth -10'] = prices_filtered['Growth -1'].rolling(min_periods=10, window=10).sum() / 10
+    prices_filtered['avgGrowth -5'] = prices_filtered['Growth -1'].rolling(min_periods=5, window=5).sum() / 5
+
+    # filter_years = pd.to_datetime(ticker_file['Date']).dt.year.tolist()
+    # histgrouped_filtered = prices_filtered[prices_filtered['year'].isin(filter_years)]
+    prices_filtered.reset_index(names=['longevity'], inplace=True)
     
-    return histgrouped_filtered
+    return prices_filtered
 
 
 
-def process_prices_company(company):
+def process_prices_company(company, financial_sheet):
     try:
-        histgrouped_filtered = get_price_info(company)
+        histgrouped_filtered = get_price_info(company, financial_sheet)
         return histgrouped_filtered
 
     except Exception as e:

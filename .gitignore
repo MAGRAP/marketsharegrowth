@@ -132,4 +132,4 @@ dmypy.json
 data/
 
 # Conf folder
-conf/
+conf/local.yml
