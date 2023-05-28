@@ -1,8 +1,6 @@
 
-common_columns:
+column_id:
   - PK
-  - ticker
-  - Date
 
 columns_income_statement:
   - Revenue
@@ -85,7 +83,7 @@ columns_cash_flow_statement:
   - Common Stock Dividends Paid
 
 columns_prices:
-  - Longevity
+  - longevity
   - Close
   - Volume
   - Growth -1
@@ -109,7 +107,7 @@ columns_ratios:
 
 columns_dim:
  - ticker
- - Company Name
- - Country
- - Industry
- - Sector
+ - company_full_name
+ - country
+ - industry
+ - sector
