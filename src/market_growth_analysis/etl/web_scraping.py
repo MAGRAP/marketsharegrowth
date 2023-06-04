@@ -164,7 +164,7 @@ def get_price_info(ticker, financial_sheet):
     hist = hist.reset_index()
     hist['Date'] = pd.to_datetime(hist['Date'])
     hist['year'] = hist['Date'].dt.year
-
+    hist.dropna(inplace=True)
 
     # Convert 'Date' column in 'hist' dataframe to string format
     hist['Date'] = hist['Date'].astype(str)
