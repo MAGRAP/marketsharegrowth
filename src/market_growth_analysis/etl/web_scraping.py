@@ -14,6 +14,7 @@ import os
 from os.path import join
 from datetime import datetime
 from pathlib import Path 
+from yahoofinancials import YahooFinancials
 
 
 ############################### FINANCIAL SHEETS ###############################
@@ -156,15 +157,24 @@ def get_price_info(ticker, financial_sheet):
     # Read the csv from stagging
     ticker_file = financial_sheet[financial_sheet['ticker']==ticker]
 
-    # Get the company data from yfinance
-    stock_info = yf.Ticker(ticker)
-    hist = stock_info.history(period="max", interval = "1mo")
+    # # Get the company data from yfinance
+    # stock_info = yf.Ticker(ticker)
+    # hist = stock_info.history(period="max", interval = "1mo")
 
-    # Transform data to add growth info
-    hist = hist.reset_index()
+    # Get the company data from yahoofinancials
+    end_date = datetime.today().strftime('%Y-%m-%d')
+    start_date = '1900-01-01'
+    yahoo_financials = YahooFinancials(ticker)
+    data = yahoo_financials.get_historical_price_data(start_date, end_date, 'monthly')
+    historical_prices = data[ticker]['prices']
+    hist = pd.DataFrame(historical_prices)
+    hist.columns = hist.columns.str.title()
+    hist.drop(columns='Date', inplace=True)
+    hist = hist.rename(columns={'Formatted_Date': 'Date'})
     hist['Date'] = pd.to_datetime(hist['Date'])
     hist['year'] = hist['Date'].dt.year
     hist.dropna(inplace=True)
+
 
     # Convert 'Date' column in 'hist' dataframe to string format
     hist['Date'] = hist['Date'].astype(str)
