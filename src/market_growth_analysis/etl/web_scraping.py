@@ -207,8 +207,8 @@ def get_price_info(ticker, financial_sheet):
     prices_filtered['Growth -1'] = (prices_filtered['Close'] - prices_filtered['Close'].shift(periods=1)) /  prices_filtered['Close'].shift(periods=1)
     prices_filtered['Growth +1'] = (prices_filtered['Close'].shift(periods=-1) - prices_filtered['Close']) /  prices_filtered['Close']
     prices_filtered['Growth +5'] = (prices_filtered['Close'].shift(periods=-5) - prices_filtered['Close']) /  prices_filtered['Close']
-    prices_filtered['avgGrowth -10'] = prices_filtered['Growth -1'].rolling(min_periods=10, window=10).sum() / 10
-    prices_filtered['avgGrowth -5'] = prices_filtered['Growth -1'].rolling(min_periods=5, window=5).sum() / 5
+    prices_filtered['Growth -10'] = (prices_filtered['Close'] - prices_filtered['Close'].shift(periods=5)) /  prices_filtered['Close'].shift(periods=5)
+    prices_filtered['Growth -5'] = (prices_filtered['Close'] - prices_filtered['Close'].shift(periods=10)) /  prices_filtered['Close'].shift(periods=10)
 
     # filter_years = pd.to_datetime(ticker_file['Date']).dt.year.tolist()
     # histgrouped_filtered = prices_filtered[prices_filtered['year'].isin(filter_years)]

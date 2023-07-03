@@ -91,8 +91,8 @@ columns_prices:
   - Growth -1
   - Growth +1
   - Growth +5
-  - avgGrowth -10
-  - avgGrowth -5
+  - Growth -10
+  - Growth -5
 
 columns_ratios:
  - Enterprise Value (EV)
