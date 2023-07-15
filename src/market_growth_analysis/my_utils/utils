@@ -1,0 +1,15 @@
+import yaml
+
+def get_conf_global():
+    # Load the YAML file
+    with open('conf/global.yml', 'r') as f:
+        columns = yaml.safe_load(f)
+
+    return columns
+
+def get_conf_local():
+    # Load the YAML file
+    with open('conf/local.yml', 'r') as f:
+        credentials = yaml.safe_load(f)
+
+    return credentials
