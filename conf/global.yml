@@ -102,7 +102,7 @@ columns_ratios:
  - EV / Invested Capital
  - Free Cash Flow (FCF)
  - EV / Free Cash Flow
- - EV / FCF
+#  - EV / FCF
  - P/E
  - P/S
  - P/CF
